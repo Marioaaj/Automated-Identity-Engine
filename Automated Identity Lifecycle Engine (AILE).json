@@ -1,0 +1,176 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "15a66e0d-47b0-481e-b809-883ab088f711",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Create a \"Batch\" of new hires\nconst newHires = [\n  { first_name: \"Mario\", last_name: \"Specialist\", department: \"IT\" },\n  { first_name: \"Sarah\", last_name: \"Jenkins\", department: \"Marketing\" },\n  { first_name: \"Robert\", last_name: \"Chen\", department: \"HR\" }\n];\n\n// 2. Wrap them in the format n8n expects\nconst items = newHires.map(person => {\n  return { json: person };\n});\n\n// 3. Run the processing logic for every person in the list\nfor (const item of items) {\n  const first = (item.json.first_name || \"\").toLowerCase();\n  const last = (item.json.last_name || \"\").toLowerCase();\n  \n  // Generate emails for the practice domain\n  item.json.email = `${first}.${last}@practice-demo.com`;\n  \n  // Assign groups: IT gets Admin, others get General\n  item.json.security_group = (item.json.department === \"IT\") ? \"System_Admins\" : \"General_Staff\";\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "3c50c007-26e9-41fc-ba63-5218d5a5693f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.security_group }}",
+                    "rightValue": "System_Admins",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bb45b01b-b2d9-42c2-a37b-8c65597874a9"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Admin Path"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ba9cbce4-502c-413b-8586-d978b60e206d",
+                    "leftValue": "={{ $json.security_group }}",
+                    "rightValue": "General_Staff",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Staff Path"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "9365f123-f3bc-448f-98fe-c3e9e660eded",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        -96
+      ],
+      "id": "af98a7e1-be8b-4ba9-afd9-0e1467598743",
+      "name": "Provision E5 License & Admin Rights",
+      "webhookId": "bfd2e910-77ad-4a91-a217-11bf41794c8c"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        96
+      ],
+      "id": "2abe2041-964a-4581-aec4-4d71c62c1dc0",
+      "name": "Provision E3 License & Standard Access",
+      "webhookId": "95dbc293-fff3-4d80-bc7a-b31c6ceee428"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Provision E5 License & Admin Rights",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Provision E3 License & Standard Access",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "88e12a32-89e8-4332-b4e0-b91e328a59e9",
+  "meta": {
+    "instanceId": "5d2dd37e5b4f0c22d40e6dea38833e8ccc6d27d0b7bbd551b10c755f9ee6f5c9"
+  },
+  "id": "lmu1IuDOJElOwT2f",
+  "tags": []
+}
